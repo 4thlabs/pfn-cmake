@@ -1,3 +1,12 @@
+include(FetchContent)
+
+FetchContent_Declare(
+    catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG v2.7.2
+    GIT_SHALLOW
+)
+
 #
 # Helper to declare a Puffin module
 #
@@ -27,7 +36,10 @@ function(puffin_declare_module)
             INTERFACE $<INSTALL_INTERFACE:include>
         )
 
-        target_link_libraries("${PUFFIN_MODULE_NAME}" ${PUFFIN_MODULE_DEPS})
+        target_link_libraries("${PUFFIN_MODULE_NAME}" 
+            INTERFACE 
+                ${PUFFIN_MODULE_DEPS}
+        )
 
         target_compile_features("${PUFFIN_MODULE_NAME}" 
             INTERFACE
@@ -85,7 +97,22 @@ function(puffin_declare_tests)
     set(oneValueArgs "NAME")
     set(multiValueArgs SOURCES DEPS)
 
-    cmake_parse_arguments(PUFFIN_SAMPLE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    cmake_parse_arguments(PUFFIN_TEST "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    FetchContent_GetProperties(catch2)
+    if(NOT catch2_POPULATED)
+        FetchContent_Populate(catch2)
+        add_subdirectory(${catch2_SOURCE_DIR} ${catch2_BINARY_DIR})
+    endif()
+    add_executable("tests_${PUFFIN_TEST_NAME}" "${PUFFIN_TEST_SOURCES}")
+    target_link_libraries("tests_${PUFFIN_TEST_NAME}" Catch2 ${PUFFIN_TEST_DEPS})
+    
+    set_target_properties("tests_${PUFFIN_TEST_NAME}"
+        PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests"
+    )
+
+    add_test(NAME Puffin COMMAND "${CMAKE_BINARY_DIR}/tests/tests_${PUFFIN_TEST_NAME}")
 endfunction()
 
 function(first_letter_upper args)
