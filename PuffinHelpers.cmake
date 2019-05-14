@@ -16,7 +16,7 @@ function(puffin_declare_module)
     set(multiValueArgs HEADERS SOURCES FEATURES DEPS)
 
     cmake_parse_arguments(PUFFIN_MODULE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    
+
     set(TMP_NAME ${PUFFIN_MODULE_NAME})
     first_letter_upper(TMP_NAME)
 
@@ -36,15 +36,17 @@ function(puffin_declare_module)
             INTERFACE $<INSTALL_INTERFACE:include>
         )
 
-        target_link_libraries("${PUFFIN_MODULE_NAME}" 
-            INTERFACE 
+        target_link_libraries("${PUFFIN_MODULE_NAME}"
+            INTERFACE
                 ${PUFFIN_MODULE_DEPS}
         )
 
-        target_compile_features("${PUFFIN_MODULE_NAME}" 
+        target_compile_features("${PUFFIN_MODULE_NAME}"
             INTERFACE
                 ${PUFFIN_MODULE_FEATURES}
         )
+
+        target_compile_features("${PUFFIN_MODULE_NAME}" INTERFACE cxx_std_14)
     else()
 
     endif()
@@ -59,9 +61,9 @@ function(puffin_declare_module)
     )
 
     install(
-        EXPORT 
+        EXPORT
             "${PUFFIN_MODULE_TARGETS_NAME}"
-        FILE 
+        FILE
             "${PUFFIN_MODULE_TARGETS_NAME}.cmake"
         NAMESPACE
             Puffin::
@@ -70,7 +72,7 @@ function(puffin_declare_module)
     )
 
     export(TARGETS "${PUFFIN_MODULE_NAME}" FILE "${PUFFIN_MODULE_TARGETS_NAME}.cmake" NAMESPACE Puffin::)
-    
+
     add_library("Puffin::${PUFFIN_MODULE_NAME}" ALIAS "${PUFFIN_MODULE_NAME}")
 endfunction()
 
@@ -83,7 +85,7 @@ function(puffin_declare_samples)
     set(multiValueArgs SOURCES DEPS)
 
     cmake_parse_arguments(PUFFIN_SAMPLE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-    
+
     add_executable("${PUFFIN_SAMPLE_NAME}" "${PUFFIN_SAMPLE_SOURCES}")
     target_link_libraries("${PUFFIN_SAMPLE_NAME}" ${PUFFIN_SAMPLE_DEPS})
     set_target_properties("${PUFFIN_SAMPLE_NAME}"
@@ -106,7 +108,7 @@ function(puffin_declare_tests)
     endif()
     add_executable("tests_${PUFFIN_TEST_NAME}" "${PUFFIN_TEST_SOURCES}")
     target_link_libraries("tests_${PUFFIN_TEST_NAME}" Catch2 ${PUFFIN_TEST_DEPS})
-    
+
     set_target_properties("tests_${PUFFIN_TEST_NAME}"
         PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/tests"
